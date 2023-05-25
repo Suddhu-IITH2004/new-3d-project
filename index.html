@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>3D Model Display</title>
+    <style>
+        body {
+            margin-top: 5px;
+            background-color: rgb(19, 19, 19);
+            padding-left: 8%;
+        }
+
+        #buttons-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            padding-left: 5px;
+        }
+
+        .button {
+            margin: 0 10;
+            margin-left: 20;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+        }
+
+        .heading {
+            color: blue;
+            padding-left: 40%;
+            font-weight: bolder;
+            font-size: larger;
+        }
+
+        .name {
+            color: aquamarine;
+            padding-left: 40%;
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .top-right-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div id="loading-overlay">
+        <div class="loader"></div>
+    </div> -->
+    <section class="content">
+        <div class="heading">
+            <h1>3D-IMAGE VIEWER</h1>
+        </div>
+    </section>
+    <div id="canvas-container"></div>
+    <!-- <div id="image-container"></div> -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.3.2/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script>
+
+        // Scene setup
+        var scene = new THREE.Scene();
+        var scene2 = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(
+            20,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        // Set camera position
+        camera.position.z = 5;
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.8);
+        document.getElementById("canvas-container").appendChild(renderer.domElement);
+
+        // Load 3D model
+        const loader = new THREE.GLTFLoader();
+        var model;
+        loader.load(
+            "model.gltf",
+            function (gltf) {
+                // Center the model
+                const bbox = new THREE.Box3().setFromObject(gltf.scene);
+                const center = bbox.getCenter(new THREE.Vector3());
+                gltf.scene.position.sub(center);
+
+                obj = gltf.scene;
+                scene.add(obj);
+                model = obj;
+            },
+            undefined,
+            function (error) {
+                console.error(error);
+            }
+        );
+        const model1 = model;
+        // Add lights
+        const light = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(light);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Add controls
+        const controls1 = new THREE.OrbitControls(camera, renderer.domElement);
+        controls1.enableDamping = true; // Add smooth damping to the controls
+        controls1.dampingFactor = 0.05; // Adjust the damping factor
+
+        let shouldStopRendering = true;
+        let once = 1;
+
+
+        // Animation loop
+        function animate1() {
+            requestAnimationFrame(animate1);
+            if (shouldStopRendering) {
+                if (getZoomLevel1() > 1.1) {
+                    renderer.render(scene, camera);
+                    once = 1;
+                }
+            }
+
+            //  controls2.enable=false;
+            controls1.update(); // Update the controls
+            checkZoomLevel();
+        }
+
+        animate1();
+
+
+
+        // Check zoom level and take actions accordingly
+        function checkZoomLevel() {
+            const zoomLevel = getZoomLevel1();
+            console.log(zoomLevel);
+
+            if (zoomLevel <= 1.1) {
+                shouldStopRendering = false;
+                if (once === 1) {
+                    screenshotRequired();
+                    showLoadingOverlay();
+                    // document.getElementById("canvas-container").style.display = "none";
+                    // document.getElementById("image-container").style.display = "block";
+                    //  scene2.add(mesh);
+                    // scene2.add(light2);
+                    render();
+                }
+                once = once + 1;
+            }
+        }
+
+
+        // Get current zoom level
+        function getZoomLevel1() {
+            const distance = camera.position.distanceTo(controls1.target);
+            const zoomLevel = Math.log2(distance);
+            return zoomLevel;
+        }
+        function getZoomLevel2() {
+            const distance = camera.position.distanceTo(controls1.target);
+            const zoomLevel = Math.log2(distance);
+            return zoomLevel;
+        }
+        // Check zoom level and take actions accordingly
+        function checkZoomLevel2() {
+            const zoomLevel = getZoomLevel2();
+            console.log(zoomLevel);
+
+            if (zoomLevel > 1.1) {
+                shouldStopRendering = true;
+                // document.getElementById("canvas-container").style.display = "none";
+                // document.getElementById("image-container").style.display = "block";
+                // scene.add(light);
+                // scene.add(directionalLight);
+                animate1();
+
+            }
+        }
+
+
+        // Add the canvas to the DOM
+        // document.getElementById("image-container").appendChild(renderer.domElement);
+
+        /**
+        * Image
+        **/
+
+        // Create a texture loader so we can load our image file
+        // var loader2 = new THREE.TextureLoader();
+
+        // Load an image file into a custom material
+        // var material = new THREE.MeshLambertMaterial({
+        //     map: loader2.load('./16154441076_482c6c4e09_b.jpg')
+        // });
+
+        // create a plane geometry for the image with a width of 10
+        // and a height that preserves the image's aspect ratio
+        // var geometry = new THREE.PlaneGeometry(2, 2);
+
+        // combine our image geometry and material into a mesh
+        // var mesh = new THREE.Mesh(geometry, material);
+
+
+
+        // set the position of the image mesh in the x,y,z dimensions
+        // mesh.position.set(0, 0, 0);
+
+        // Create a plane geometry with the desired dimensions
+        // const geometry = new THREE.PlaneGeometry(2, 2);
+
+        // Load the texture for the image
+        // const textureLoader = new THREE.TextureLoader();
+        // const texture = textureLoader.load('./16154441076_482c6c4e09_b.jpg');
+
+        // Create a material with the texture
+        // const material = new THREE.MeshBasicMaterial({ map: texture });
+
+        // Create a mesh with the geometry and material
+        // const mesh = new THREE.Mesh(geometry, material);
+
+        // Adjust the position to center the image
+        // mesh.position.set(0, 0, 0);
+
+        // Add the mesh to the scene
+        // scene2.add(mesh);
+
+
+
+        // add the image to the scene
+        //  scene2.add(mesh);
+
+        /**
+        * Lights
+        **/
+
+        // Add a point light with #fff color, .7 intensity, and 0 distance
+        // var light2 = new THREE.PointLight(0xffffff, 0.5);
+
+        // Specify the light's position
+        // light2.position.set(1, 1, 1);
+        // material.side=THREE.DoubleSide
+        // Add the light to the scene
+        //  scene2.add(light2)
+        // scene2.add(light2);
+        // scene2.add(directionalLight);
+
+        /**
+        * Render!
+        **/
+
+        // The main animation function that re-renders the scene each animation frame
+        // function animate2() {
+        //     requestAnimationFrame(animate2);
+        //     if(getZoomLevel2()<=1.1){
+        //     renderer.render(scene2, camera);
+        //     }
+        //     controls1.update();
+        //     checkZoomLevel2();
+        // }
+
+        // Create a separate scene for the 2D image
+        const imageScene = new THREE.Scene();
+
+        // Create a plane geometry with the desired dimensions
+        const geometry = new THREE.PlaneGeometry(2, 2);
+
+        // Load the texture for the image
+        const textureLoader = new THREE.TextureLoader();
+        const texture = textureLoader.load('./16154441076_482c6c4e09_b.jpg');
+
+        // Create a material with the texture
+        const material = new THREE.MeshBasicMaterial({ map: texture });
+
+        // Create a mesh with the geometry and material
+        const mesh = new THREE.Mesh(geometry, material);
+
+        // Adjust the position to center the image in the image scene
+        mesh.position.set(0, 0, 0);
+
+        // Add the mesh to the image scene
+        imageScene.add(mesh);
+
+        // Position the camera for the image scene
+        const imageCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        imageCamera.position.z = 1;
+
+        // Add controls
+        // const controls1 = new THREE.OrbitControls(imageCamera, renderer.domElement);
+        // controls1.enableDamping = true; // Add smooth damping to the controls
+        // controls1.dampingFactor = 0.05; // Adjust the damping factor
+
+        // Render the main scene and the image scene separately
+        function render() {
+            // Render the main scene
+            renderer.render(scene, camera);
+            animate2();
+
+
+
+        }
+        // The main animation function that re-renders the scene each animation frame
+        function animate2() {
+            requestAnimationFrame(animate2);
+            if (getZoomLevel2() <= 1.1) {
+                // Render the image scene on top of the main scene
+                renderer.render(imageScene, imageCamera);
+            }
+            controls1.update();
+            checkZoomLevel2();
+        }
+
+
+
+        // Call the render function in your animation loop
+
+
+        // Full screen button
+        const fullScreenButton = document.createElement('button');
+        fullScreenButton.innerHTML = 'Full Screen';
+        fullScreenButton.classList.add('button');
+        fullScreenButton.addEventListener('click', function () {
+            enterFullscreen();
+        });
+
+        // Enter fullscreen mode
+        function enterFullscreen() {
+            const canvasContainer = document.getElementById("canvas-container");
+            if (canvasContainer.requestFullscreen) {
+                canvasContainer.requestFullscreen();
+                renderer.setSize(window.innerWidth * 1.5, window.innerHeight * 1.5);
+            } else if (canvasContainer.mozRequestFullScreen) { // Firefox
+                canvasContainer.mozRequestFullScreen();
+            } else if (canvasContainer.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                canvasContainer.webkitRequestFullscreen();
+                renderer.setSize(window.innerWidth * 1.5, window.innerHeight * 1.5);
+            } else if (canvasContainer.msRequestFullscreen) { // IE/Edge
+                canvasContainer.msRequestFullscreen();
+            }
+        }
+
+
+        // Exit fullscreen mode
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                renderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.8);
+            } else if (document.mozCancelFullScreen) { // Firefox
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { // IE/Edge
+                document.msExitFullscreen();
+            }
+        }
+
+        // Listen for fullscreen change event
+        document.addEventListener('fullscreenchange', function () {
+            if (!document.fullscreenElement) {
+                exitFullscreen();
+            }
+        });
+
+        // Screenshot button
+        const screenshotButton = document.createElement('button');
+        screenshotButton.innerHTML = 'Take Screenshot';
+        screenshotButton.classList.add('button', 'top-right-button');
+        screenshotButton.addEventListener('click', function () {
+            takeScreenshot();
+        });
+
+        function screenshotRequired() {
+            const modelPosition = model.position.clone(); // Store the model's position
+            model.position.set(0, 0, 0); // Move the model to the origin temporarily
+
+            // Copy contents to off-screen renderer
+            offScreenRenderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.8);
+            offScreenRenderer.setClearColor(0x000000, 0.15); // Set clear color to transparent
+            document.body.appendChild(offScreenRenderer.domElement);
+            offScreenRenderer.render(scene, camera);
+
+            // Capture off-screen renderer using html2canvas
+            html2canvas(offScreenRenderer.domElement).then(function (canvas) {
+                const screenshotURL = canvas.toDataURL();
+                document.body.removeChild(offScreenRenderer.domElement); // Remove the off-screen renderer element
+                model.position.copy(modelPosition); // Restore the model's original position
+            });
+        }
+
+
+
+        // Off-screen renderer
+        const offScreenRenderer = new THREE.WebGLRenderer({ alpha: true });
+
+        // Take screenshot
+        function takeScreenshot() {
+            const user_input = confirm(" Zoom the place where you want screenshot off:-");
+            if (user_input) {
+                const modelPosition = model.position.clone(); // Store the model's position
+                model.position.set(0, 0, 0); // Move the model to the origin temporarily
+
+                // Copy contents to off-screen renderer
+                offScreenRenderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.8);
+                offScreenRenderer.setClearColor(0x000000, 0.15); // Set clear color to transparent
+                document.body.appendChild(offScreenRenderer.domElement);
+                offScreenRenderer.render(scene, camera);
+
+                // Capture off-screen renderer using html2canvas
+                html2canvas(offScreenRenderer.domElement).then(function (canvas) {
+                    const screenshotURL = canvas.toDataURL();
+                    openScreenshotWindow(screenshotURL);
+                    document.body.removeChild(offScreenRenderer.domElement); // Remove the off-screen renderer element
+                    model.position.copy(modelPosition); // Restore the model's original position
+                });
+            }
+            else {
+                alert("Exited from screenshot mode");
+            }
+
+
+        }
+
+        // Open screenshot window
+        function openScreenshotWindow(screenshotURL) {
+            const screenshotWindow = window.open("", "_blank");
+            screenshotWindow.document.write('<img src="' + screenshotURL + '" alt="Screenshot" style="display:block; margin: 0 auto; padding: 50px;">');
+
+            // Create compare button
+            const compareButton = screenshotWindow.document.createElement('button');
+            compareButton.innerHTML = 'Compare Results';
+            compareButton.style.margin = '10px';
+            compareButton.style.display = 'flex';
+            compareButton.addEventListener('click', function () {
+                // Perform actions when compare button is clicked
+                // Add your code here
+                screenshotWindow.close();
+                alert('Comparing Results... Please Wait!!!');
+                showLoadingOverlay();
+            });
+            screenshotWindow.document.body.appendChild(compareButton);
+
+            // Create exit button
+            const exitButton = screenshotWindow.document.createElement('button');
+            exitButton.innerHTML = 'Exit';
+            exitButton.style.margin = '10px';
+            exitButton.style.display = 'flex';
+            exitButton.addEventListener('click', function () {
+                screenshotWindow.close();
+                alert("Exited from screenshot mode");
+            });
+            screenshotWindow.document.body.appendChild(exitButton);
+
+            screenshotWindow.document.close();
+        }
+
+        // Function to show loading overlay with transparent background and loading bar
+        function showLoadingOverlay() {
+            // Create loading overlay div
+            var loadingOverlay = document.createElement('div');
+            loadingOverlay.id = 'loading-overlay';
+            loadingOverlay.style.position = 'fixed';
+            loadingOverlay.style.top = '0';
+            loadingOverlay.style.left = '0';
+            loadingOverlay.style.width = '100%';
+            loadingOverlay.style.height = '100%';
+            loadingOverlay.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+            loadingOverlay.style.zIndex = '9999';
+            loadingOverlay.style.display = 'flex';
+            loadingOverlay.style.justifyContent = 'center';
+            loadingOverlay.style.alignItems = 'center';
+
+            // Create loading bar
+            var loadingBar = document.createElement('div');
+            loadingBar.style.width = '200px';
+            loadingBar.style.height = '20px';
+            loadingBar.style.border = '1px solid #ccc';
+            loadingBar.style.borderRadius = '10px';
+
+            // Create loading progress element
+            var loadingProgress = document.createElement('div');
+            loadingProgress.style.width = '0%';
+            loadingProgress.style.height = '100%';
+            loadingProgress.style.backgroundColor = '#3498db';
+            loadingProgress.style.borderRadius = '10px';
+
+            // Append loading progress to loading bar
+            loadingBar.appendChild(loadingProgress);
+
+            // Append loading bar to loading overlay
+            loadingOverlay.appendChild(loadingBar);
+
+            // Append loading overlay to the document body
+            document.body.appendChild(loadingOverlay);
+
+            // Simulate loading progress
+            var progress = 0;
+            var interval = setInterval(function () {
+                progress += 5; // Increase the progress value as desired
+
+                if (progress >= 100) {
+                    clearInterval(interval); // Stop the interval when progress reaches 100%
+                    loadingOverlay.style.display = 'none'; // Hide the loading overlay
+                }
+
+                // Update the loading progress width
+                loadingProgress.style.width = progress + '%';
+            }, 100); // Adjust the interval duration as desired
+        }
+
+
+        // Append button to the buttons container
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.id = 'buttons-container';
+        // buttonsContainer.appendChild(screenshotButton);
+        // document.body.appendChild(buttonsContainer);
+        buttonsContainer.appendChild(fullScreenButton);
+        document.body.appendChild(buttonsContainer);
+        // Append the button to the canvas container
+        const canvasContainer = document.getElementById("canvas-container");
+        canvasContainer.appendChild(screenshotButton);
+    </script>
+</body>
+
+</html>

@@ -93,6 +93,7 @@
 
         // Scene setup
         var scene = new THREE.Scene();
+        var scene2 = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(
             20,
             window.innerWidth / window.innerHeight,
@@ -138,11 +139,170 @@
         var controls1 = new THREE.OrbitControls(camera, renderer.domElement);
         controls1.enableDamping = true; // Add smooth damping to the controls
         controls1.dampingFactor = 1.0;// Adjust the damping factor
-      
+        // controls1.enablePan = false; // Disable panning if not needed
+        // controls1.rotateSpeed = 1.0; // Adjust rotate speed (higher value for faster rotation)
+        controls1.rotateSpeed = 1.0; // Increase the rotation sensitivity
+        controls1.zoomSpeed = 1.0; // Increase the zoom sensitivity
 
 
         let shouldStopRendering = true;
         let once = 1;
+
+
+        // Animation loop
+        function animate1() {
+            requestAnimationFrame(animate1);
+            if (shouldStopRendering) {
+                if (getZoomLevel1() > 1.1) {
+                    renderer.render(scene, camera);
+                    once = 1;
+                }
+            }
+
+            //  controls2.enable=false;
+            controls1.update(); // Update the controls
+            checkZoomLevel();
+        }
+
+        animate1();
+
+
+
+        // Check zoom level and take actions accordingly
+        function checkZoomLevel() {
+            const zoomLevel = getZoomLevel1();
+            console.log(zoomLevel);
+
+            if (zoomLevel <= 1.1) {
+                shouldStopRendering = false;
+                if (once === 1) {
+                    screenshotRequired();
+                    showLoadingOverlay();
+                    // document.getElementById("canvas-container").style.display = "none";
+                    // document.getElementById("image-container").style.display = "block";
+                    //  scene2.add(mesh);
+                    // scene2.add(light2);
+                    render();
+                }
+                once = once + 1;
+            }
+        }
+
+
+        // Get current zoom level
+        function getZoomLevel1() {
+            const distance = camera.position.distanceTo(controls1.target);
+            const zoomLevel = Math.log2(distance);
+            return zoomLevel;
+        }
+        function getZoomLevel2() {
+            const distance = camera.position.distanceTo(controls1.target);
+            const zoomLevel = Math.log2(distance);
+            return zoomLevel;
+        }
+        // Check zoom level and take actions accordingly
+        function checkZoomLevel2() {
+            const zoomLevel = getZoomLevel2();
+            console.log(zoomLevel);
+
+            if (zoomLevel > 1.1) {
+                shouldStopRendering = true;
+                // document.getElementById("canvas-container").style.display = "none";
+                // document.getElementById("image-container").style.display = "block";
+                // scene.add(light);
+                // scene.add(directionalLight);
+                controls1.enableDamping = true; // Add smooth damping to the controls
+                controls1.dampingFactor = 1.0; // Adjust the damping factor
+                controls1.rotateSpeed = 1.0; // Increase the rotation sensitivity
+                controls1.zoomSpeed = 1.0; // Increase the zoom sensitivity
+
+                // controls1.rotateSpeed = 1.0; // Adjust rotate speed (higher value for faster rotation)
+                controls1.update();
+                requestAnimationFrame(animate1);
+
+            }
+        }
+
+
+        // Add the canvas to the DOM
+        // document.getElementById("image-container").appendChild(renderer.domElement);
+
+        /**
+        * Image
+        **/
+
+        // Create a texture loader so we can load our image file
+        // var loader2 = new THREE.TextureLoader();
+
+        // Load an image file into a custom material
+        // var material = new THREE.MeshLambertMaterial({
+        //     map: loader2.load('./16154441076_482c6c4e09_b.jpg')
+        // });
+
+        // create a plane geometry for the image with a width of 10
+        // and a height that preserves the image's aspect ratio
+        // var geometry = new THREE.PlaneGeometry(2, 2);
+
+        // combine our image geometry and material into a mesh
+        // var mesh = new THREE.Mesh(geometry, material);
+
+
+
+        // set the position of the image mesh in the x,y,z dimensions
+        // mesh.position.set(0, 0, 0);
+
+        // Create a plane geometry with the desired dimensions
+        // const geometry = new THREE.PlaneGeometry(2, 2);
+
+        // Load the texture for the image
+        // const textureLoader = new THREE.TextureLoader();
+        // const texture = textureLoader.load('./16154441076_482c6c4e09_b.jpg');
+
+        // Create a material with the texture
+        // const material = new THREE.MeshBasicMaterial({ map: texture });
+
+        // Create a mesh with the geometry and material
+        // const mesh = new THREE.Mesh(geometry, material);
+
+        // Adjust the position to center the image
+        // mesh.position.set(0, 0, 0);
+
+        // Add the mesh to the scene
+        // scene2.add(mesh);
+
+
+
+        // add the image to the scene
+        //  scene2.add(mesh);
+
+        /**
+        * Lights
+        **/
+
+        // Add a point light with #fff color, .7 intensity, and 0 distance
+        // var light2 = new THREE.PointLight(0xffffff, 0.5);
+
+        // Specify the light's position
+        // light2.position.set(1, 1, 1);
+        // material.side=THREE.DoubleSide
+        // Add the light to the scene
+        //  scene2.add(light2)
+        // scene2.add(light2);
+        // scene2.add(directionalLight);
+
+        /**
+        * Render!
+        **/
+
+        // The main animation function that re-renders the scene each animation frame
+        // function animate2() {
+        //     requestAnimationFrame(animate2);
+        //     if(getZoomLevel2()<=1.1){
+        //     renderer.render(scene2, camera);
+        //     }
+        //     controls1.update();
+        //     checkZoomLevel2();
+        // }
 
         // Create a separate scene for the 2D image
         const imageScene = new THREE.Scene();
@@ -167,118 +327,33 @@
         imageScene.add(mesh);
 
         // Position the camera for the image scene
-        var imageCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const imageCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
         imageCamera.position.z = 1;
 
-          var controls2 = new THREE.OrbitControls(imageCamera, renderer.domElement);
-         controls2.enableDamping = true; // Add smooth damping to the controls
-         controls2.dampingFactor = 1.0;// Adjust the damping factor
-         controls2.enablePan=false;
-        controls2.enableRotate=false;
-        // controls2.minDistance = ; // Set the minimum distance (zoom in limit)
-//  controls2.maxDistance = 1; // Set the maximum distance (zoom out limit)
-      
-        controls1.enabled=true;
+        // Add controls
+        // const controls1 = new THREE.OrbitControls(imageCamera, renderer.domElement);
+        // controls1.enableDamping = true; // Add smooth damping to the controls
+        // controls1.dampingFactor = 0.05; // Adjust the damping factor
 
-        // Animation loop
-        function animate1() {
+        // Render the main scene and the image scene separately
+        function render() {
+            // Render the main scene
+            renderer.render(scene, camera);
+            // controls1.enableZoom=true;
+            requestAnimationFrame(animate2);
 
-            requestAnimationFrame(animate1);
-            if (shouldStopRendering) {
-                if (controls1.getDistance > 10) {
-                    // Update the controls
-                    renderer.render(scene, camera);
-                    once = 1;
-                }
-                controls1.update();
-            }
-            
-            controls2.enabled=false;
-       
-            checkZoomLevel();
+
+
         }
-
-        animate1();
-
-
-
-        // Check zoom level and take actions accordingly
-        function checkZoomLevel() {
-            const zoomLevel = getZoomLevel1();
-            console.log(controls1.enabled);
-            console.log(zoomLevel);
-            console.log("Hai1");
-            console.log(controls1.getDistance)
-
-            if (controls1.getDistance <= 2) {
-                shouldStopRendering = false;
-                if (once === 1) {
-                    screenshotRequired();
-                    showLoadingOverlay();
-                    // document.getElementById("canvas-container").style.display = "none";
-                    // document.getElementById("image-container").style.display = "block";
-                    //  scene2.add(mesh);
-                    // scene2.add(light2);
-                }
-                controls2.enabled=true;
-                    controls1.enabled=false;
-                    once = once + 1;
-                    animate2();
-            }
-        }
-
-
-        // Get current zoom level
-        function getZoomLevel1() {
-            var zoomLevel = controls1.object.position.distanceTo(controls1.target);
-            return zoomLevel;
-        }
-        function getZoomLevel2() {
-            console.log(controls2.enabled);
-            var zoomLevel = controls2.object.position.distanceTo(controls2.target);
-            console.log(zoomLevel);
-            return zoomLevel;
-        }
-        // Check zoom level and take actions accordingly
-        function checkZoomLevel2() {
-            const zoomLevel = getZoomLevel2();
-            console.log(zoomLevel);
-            console.log("Hai2");
-
-            if (controls2.getDistance > 1.1) {
-                shouldStopRendering = true;
-                // document.getElementById("canvas-container").style.display = "none";
-                // document.getElementById("image-container").style.display = "block";
-                // scene.add(light);
-                // scene.add(directionalLight);
-                // controls1.enableDamping = true; // Add smooth damping to the controls
-                // controls1.dampingFactor = 1.0; // Adjust the damping factor
-                // controls1.rotateSpeed = 1.0; // Increase the rotation sensitivity
-                // controls1.zoomSpeed = 1.0; // Increase the zoom sensitivity
-
-                // controls1.rotateSpeed = 1.0; // Adjust rotate speed (higher value for faster rotation)
-                // controls1.update();
-                controls1.enabled=true;
-                controls2.enabled=false;
-                requestAnimationFrame(animate1);
-
-            }
-        }
-
-
-        
         // The main animation function that re-renders the scene each animation frame
         function animate2() {
             requestAnimationFrame(animate2);
-            if (controls2.getDistance <= 1.1) {
-
-                controls2.update();
+            if (getZoomLevel2() <= 1.1) {
                 // Render the image scene on top of the main scene
                 renderer.render(imageScene, imageCamera);
             }
-   
+            // controls1.update();
             checkZoomLevel2();
-           
         }
 
 

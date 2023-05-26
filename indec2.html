@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Three.js Zooming Example</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="canvas-container"></div>
+    <div id="image-container"></div>
+    <script src="https://threejs.org/build/three.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(
+            20,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            10000
+        );
+        // Set camera position
+        camera.position.z = 5;
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.8);
+        document.getElementById("canvas-container").appendChild(renderer.domElement);
+
+        // Load 3D model
+        const loader = new THREE.GLTFLoader();
+        var model;
+        loader.load(
+            "model.gltf",
+            function (gltf) {
+                // Center the model
+                const bbox = new THREE.Box3().setFromObject(gltf.scene);
+                const center = bbox.getCenter(new THREE.Vector3());
+                gltf.scene.position.sub(center);
+
+                obj = gltf.scene;
+                scene.add(obj);
+                model = obj;
+            },
+            undefined,
+            function (error) {
+                console.error(error);
+            }
+        );
+        const model1 = model;
+        // Add lights
+        const light = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(light);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Add controls
+        var controls1 = new THREE.OrbitControls(camera, renderer.domElement);
+        controls1.enableDamping = true; // Add smooth damping to the controls
+        controls1.dampingFactor = 1.0;// Adjust the damping factor
+        controls1.maxDistance = 2; // Set the minimum distance (zoom in limit)
+        // controls1.maxDistance = 5; // Set the maximum distance (zoom out limit)
+
+
+
+        // Load an image texture
+        // const textureLoader = new THREE.TextureLoader();
+        // const imageTexture = textureLoader.load('./16154441076_482c6c4e09_b.jpg');
+
+        // Create a plane with the image texture
+        // const planeGeometry = new THREE.PlaneGeometry(10, 10);
+        // const planeMaterial = new THREE.MeshBasicMaterial({ map: imageTexture });
+        // const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        // plane.position.z = -5; // Position the plane closer to the camera
+
+
+        // Set up initial camera position
+        // camera.position.z = 5;
+
+        // Function to handle window resizing
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.8);
+        }
+        window.addEventListener('resize', onWindowResize);
+
+        // Function to handle zooming
+
+
+        // Add event listener for mouse wheel (scroll) events
+        //   document.addEventListener('wheel', handleZoom);
+        // Get current zoom level
+        function getZoomLevel() {
+            const distance = camera.position.distanceTo(controls1.target);
+            const zoomLevel = Math.log2(distance);
+            console.log(zoomLevel);
+            return zoomLevel;
+        }
+
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls1.update();
+            renderer.render(scene, camera);
+            getZoomLevel();
+            console.log(controls1.getDistance);
+        }
+        animate();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="canvas-container"></div>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.3.2/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script>// Create a scene
+        var scene = new THREE.Scene();
+        
+        // Create a camera
+        var camera = new THREE.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 0.1, 10000);
+        camera.position.z = 5;
+        
+        // Create a renderer
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth*0.8, window.innerHeight*0.8);
+        document.body.appendChild(renderer.domElement);
+        
+        // Create OrbitControls
+        var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  
+        // Add lights
+        const light = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(light);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+        
+        // Load the 2D image texture
+        var imageTexture = new THREE.TextureLoader().load('./16154441076_482c6c4e09_b.jpg');
+        
+        // Create a plane geometry for the 2D image
+        var planeGeometry = new THREE.PlaneGeometry(2, 2);
+        var planeMaterial = new THREE.MeshBasicMaterial({ map: imageTexture, transparent: true });
+        var imagePlane = new THREE.Mesh(planeGeometry, planeMaterial);
+        scene.add(imagePlane);
+        
+
+        var loader = new THREE.GLTFLoader();
+        var obj;
+        loader.load(
+            "model.gltf",
+            function (gltf) {
+                // Center the model
+                const bbox = new THREE.Box3().setFromObject(gltf.scene);
+                const center = bbox.getCenter(new THREE.Vector3());
+                gltf.scene.position.sub(center);
+
+                var model = gltf.scene;
+                scene.add(model);
+                obj=model;
+            },
+            undefined,
+            function (error) {
+                console.error(error);
+            }
+        );
+  
+        
+        // Function to control the visibility of the 3D model based on the zoom level
+        function controlVisibility() {
+          var zoomLevel = controls.target.distanceTo(controls.object.position);
+        
+          if (zoomLevel < 5) {
+            if (obj){
+                obj.visible=false;
+                console.log("levle<5")
+                controls.enableRotate=false;
+            }
+            imagePlane.visible = true; // Show the 2D image
+          } else {
+            if(obj){
+                obj.visible=true;
+                controls.enableRotate=true;
+                console.log("level>5")
+            }
+            imagePlane.visible = false; // Hide the 2D image
+          }
+        }
+        
+        // Render loop
+        function animate() {
+          requestAnimationFrame(animate);
+          controls.update();
+          renderer.render(scene, camera);
+        }
+        // Add event listener for zoom event
+controls.addEventListener('change', controlVisibility);
+        animate();
+        </script>
+</body>
+</html>

@@ -109,7 +109,7 @@
         const loader = new THREE.GLTFLoader();
         var model;
         loader.load(
-            "model.gltf",
+            "./model.gltf",
             function (gltf) {
                 // Center the model
                 const bbox = new THREE.Box3().setFromObject(gltf.scene);
